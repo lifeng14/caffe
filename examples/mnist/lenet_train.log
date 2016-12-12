@@ -1,0 +1,37 @@
+I1204 23:34:11.186758 31373 caffe.cpp:217] Using GPUs 0
+I1204 23:34:13.245461 31373 caffe.cpp:222] GPU 0: GeForce GTX TITAN X
+I1204 23:34:13.581154 31373 solver.cpp:48] Initializing solver from parameters: 
+test_iter: 100
+test_interval: 500
+base_lr: 0.01
+display: 100
+max_iter: 10000
+lr_policy: "inv"
+gamma: 0.0001
+power: 0.75
+momentum: 0.9
+weight_decay: 0.0005
+snapshot: 5000
+snapshot_prefix: "examples/mnist/lenet"
+solver_mode: GPU
+device_id: 0
+net: "examples/mnist/lenet_train_test.prototxt"
+train_state {
+  level: 0
+  stage: ""
+}
+F1204 23:34:13.581306 31373 solver.cpp:438] Cannot write to snapshot prefix 'examples/mnist/lenet'.  Make sure that the directory exists and is writeable.
+*** Check failure stack trace: ***
+    @     0x7fa7d8316e6d  (unknown)
+    @     0x7fa7d8318ced  (unknown)
+    @     0x7fa7d8316a5c  (unknown)
+    @     0x7fa7d831963e  (unknown)
+    @     0x7fa7ddb8af44  caffe::Solver<>::CheckSnapshotWritePermissions()
+    @     0x7fa7ddb8cc18  caffe::Solver<>::Init()
+    @     0x7fa7ddb8cf6a  caffe::Solver<>::Solver()
+    @     0x7fa7ddba4be3  caffe::Creator_SGDSolver<>()
+    @           0x40f738  caffe::SolverRegistry<>::CreateSolver()
+    @           0x408872  train()
+    @           0x40625c  main
+    @     0x7fa7d381caf5  __libc_start_main
+    @           0x406b65  (unknown)
