@@ -39,6 +39,7 @@ void TripletMultilabelImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dt
   LOG(INFO) << "Opening file " << source;
   std::ifstream infile(source.c_str());
 
+  unsigned neg_size = 4;
   string line;
   std::vector<std::string> strs;
   std::vector<std::string> img_labels;
@@ -47,13 +48,13 @@ void TripletMultilabelImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dt
   while (std::getline(infile, line)) {
     boost::split(strs, line, boost::is_any_of(";"));
     pairs.clear();
-    for(int i =0; i < strs.size(); ++i) {
+    for(int i =0; i < neg_size+2; ++i) {
       boost::split(img_labels, strs[i], boost::is_any_of(" \t"));
       labels.clear();
       for (int label_id = 1; label_id < img_labels.size(); ++label_id) {
         labels.push_back(atoi(img_labels[label_id].c_str()));
       }
-      pairs.push_back(make_pair(strs[0], labels));
+      pairs.push_back(make_pair(img_labels[0], labels));
     }
     lines_.push_back(pairs);
   }
@@ -89,7 +90,7 @@ void TripletMultilabelImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dt
   // Reshape prefetch_data and top[0] according to the batch_size.
   const int batch_size = this->layer_param_.image_data_param().batch_size();
   CHECK_GT(batch_size, 0) << "Positive batch size required";
-  top_shape[0] = batch_size * (2 + 10); // pair of 2 images and 10 the other images
+  top_shape[0] = batch_size * (2 + neg_size); // pair of 2 images and 10 the other images
   for (int i = 0; i < this->PREFETCH_COUNT; ++i) {
     this->prefetch_[i].data_.Reshape(top_shape);
   }
@@ -101,7 +102,7 @@ void TripletMultilabelImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dt
   
   // label
   vector<int> label_shape(2, 0);
-  label_shape[0] = batch_size * (2 + 10);
+  label_shape[0] = batch_size * (2 + neg_size);
   label_shape[1] = lines_[lines_id_][0].second.size();
   for (int i = 0; i < this->PREFETCH_COUNT; ++i) {
     this->prefetch_[i].label_.Reshape(label_shape);
@@ -119,6 +120,7 @@ void TripletMultilabelImageDataLayer<Dtype>::ShuffleImages() {
 // This function is called on prefetch thread
 template <typename Dtype>
 void TripletMultilabelImageDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
+  unsigned neg_size = 4;
   CPUTimer batch_timer;
   batch_timer.Start();
   double read_time = 0;
@@ -142,11 +144,11 @@ void TripletMultilabelImageDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
   vector<int> top_shape = this->data_transformer_->InferBlobShape(cv_img);
   this->transformed_data_.Reshape(top_shape);
   // Reshape batch according to the batch_size.
-  top_shape[0] = batch_size * (2 + 10);
+  top_shape[0] = batch_size * (2 + neg_size);
   batch->data_.Reshape(top_shape);
 
   vector<int> label_shape(2, 0);
-  label_shape[0] = batch_size * (2 + 10);
+  label_shape[0] = batch_size * (2 + neg_size);
   label_shape[1] = lines_[lines_id_][0].second.size();
   batch->label_.Reshape(label_shape);
 
@@ -174,7 +176,7 @@ void TripletMultilabelImageDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
       } else if (img_id == 1) {
         offset_num = batch_size + item_id;
       } else {
-        offset_num = 2 * batch_size + 10 * item_id + (img_id - 2);
+        offset_num = 2 * batch_size + neg_size * item_id + (img_id - 2);
       }
       int offset = batch->data_.offset(offset_num);
       this->transformed_data_.set_cpu_data(prefetch_data + offset);
