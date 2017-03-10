@@ -2,14 +2,14 @@
  * triplet_loss_layer.cpp
  *
  *  Created on: Jun 2, 2015
- *      Author: tangwei
+ *      Author: lifeng
  */
 
 #include <algorithm>
 #include <vector>
 
 #include "caffe/layer.hpp"
-#include "caffe/loss_layers.hpp"
+#include "caffe/layers/triplet_loss_layer.hpp"
 #include "caffe/util/io.hpp"
 #include "caffe/util/math_functions.hpp"
 
