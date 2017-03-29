@@ -91,8 +91,8 @@ void TripletMultilabelImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dt
   const int batch_size = this->layer_param_.image_data_param().batch_size();
   CHECK_GT(batch_size, 0) << "Positive batch size required";
   top_shape[0] = batch_size * (2 + neg_size); // pair of 2 images and 10 the other images
-  for (int i = 0; i < this->PREFETCH_COUNT; ++i) {
-    this->prefetch_[i].data_.Reshape(top_shape);
+  for (int i = 0; i < this->prefetch_.size(); ++i) {
+    this->prefetch_[i]->data_.Reshape(top_shape);
   }
   top[0]->Reshape(top_shape);
 
@@ -104,8 +104,8 @@ void TripletMultilabelImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dt
   vector<int> label_shape(2, 0);
   label_shape[0] = batch_size * (2 + neg_size);
   label_shape[1] = lines_[lines_id_][0].second.size();
-  for (int i = 0; i < this->PREFETCH_COUNT; ++i) {
-    this->prefetch_[i].label_.Reshape(label_shape);
+  for (int i = 0; i < this->prefetch_.size(); ++i) {
+    this->prefetch_[i]->label_.Reshape(label_shape);
   }
   top[1]->Reshape(label_shape); 
 }
